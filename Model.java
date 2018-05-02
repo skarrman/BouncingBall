@@ -1,3 +1,4 @@
+import java.awt.*;
 
 /**
  * The physics model.
@@ -35,11 +36,21 @@ class Model {
 			if (b.y < b.radius || b.y > areaHeight - b.radius) {
 				b.vy *= -1;
 			}
-			
+			for(Ball b2 : balls){
+				if (b2 != b) {
+					if(isCollision(b, b2))
+						System.out.println("Bounce!");
+				}
+			}
+			b.vy -= 0.7;
 			// compute new position according to the speed of the ball
 			b.x += deltaT * b.vx;
 			b.y += deltaT * b.vy;
 		}
+	}
+
+	boolean isCollision(Ball b1, Ball b2){
+		return Math.abs(Point.distance(b1.x,b1.y,b2.x,b2.y)) < (b1.radius + b2.radius);
 	}
 	
 	/**
