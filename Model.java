@@ -44,7 +44,7 @@ class Model {
 
 			double a2 = getAngle(b.x, b.y, b2.x, b2.y);
 			System.out.println(Math.toDegrees(a2));
-			double a = (a2 - 180) % 360;
+			double a = (a2 - Math.PI) % (2*Math.PI);
 
 			double constant = 0.2;
 
