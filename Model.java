@@ -13,6 +13,7 @@ import java.awt.*;
 class Model {
 
 	double areaWidth, areaHeight;
+	final double g = 9.82;
 	
 	Ball [] balls;
 
@@ -33,7 +34,7 @@ class Model {
 			if (b.x < b.radius || b.x > areaWidth - b.radius) {
 				b.vx *= -1; // change direction of ball
 			}
-			if (b.y < b.radius || b.y > areaHeight - b.radius) {
+			if (b.y < b.radius * 0.9 || b.y > areaHeight - b.radius) {
 				b.vy *= -1;
 			}
 			for(Ball b2 : balls){
@@ -42,12 +43,31 @@ class Model {
 						System.out.println("Bounce!");
 				}
 			}
-			b.vy -= 0.7;
+			b.vy -= g * deltaT;
 			// compute new position according to the speed of the ball
 			b.x += deltaT * b.vx;
 			b.y += deltaT * b.vy;
 		}
 	}
+
+	//Fix the v1 hello you 
+
+	double v2(double m1, double u1, double m2, double u2){
+		double r = R(u1,u2);
+		double i = I(m1,u1,m2,u2);
+
+		return (r*m1 + i) / (m1-m2);
+	}
+
+	double R(double u1, double u2){
+		return -(u2 - u1);
+	}
+
+	double I(double m1, double u1, double m2, double u2){
+		return m1 * u1 + m2 * u2;
+	}
+
+
 
 	boolean isCollision(Ball b1, Ball b2){
 		return Math.abs(Point.distance(b1.x,b1.y,b2.x,b2.y)) < (b1.radius + b2.radius);
