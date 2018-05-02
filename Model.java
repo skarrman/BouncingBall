@@ -13,7 +13,7 @@ import java.awt.*;
 class Model {
 
 	double areaWidth, areaHeight;
-	final double g = 9.82;
+	final static double GRAVITY = 9.82;
 	
 	Ball [] balls;
 
@@ -23,47 +23,71 @@ class Model {
 		
 		// Initialize the model with a few balls
 		balls = new Ball[2];
-		balls[0] = new Ball(width / 3, height * 0.9, 1.2, 1.6, 0.2, 2);
-		balls[1] = new Ball(2 * width / 3, height * 0.7, -0.6, 0.6, 0.3, 3);
+		balls[0] = new Ball(width / 3, height * 0.9, 1.2, 1.6, 0.2, 10);
+		balls[1] = new Ball(2 * width / 3, height * 0.7, -0.6, 0.6, 0.3, 20);
 	}
 
 	void step(double deltaT) {
 		// TODO this method implements one step of simulation with a step deltaT
+		if (isCollision(balls[0], balls[1])) {
+//			System.out.println("Bounce!");
+			Ball b = balls[0];
+			Ball b2 = balls[1];
+			double u1 = getVelocity(b.vx, b.vy);
+			double u2 = getVelocity(b2.vx, b2.vy);
+
+			double r = R(u1, u2);
+			double i = I(b.mass, u1, b2.mass, u2);
+
+			double v2 = v2(b.mass, b2.mass, r, i);
+			double v1 = v1(v2, r);
+
+			double a2 = getAngle(b.x, b.y, b2.x, b2.y);
+			System.out.println(Math.toDegrees(a2));
+			double a = (a2 - 180) % 360;
+
+			double constant = 0.2;
+
+			b.vx = constant * getXVelocity(a, v1);
+			b.vy = constant * getYVelocity(a, v1);
+
+			b2.vx = constant * getXVelocity(a2, v2);
+			b2.vy = constant * getYVelocity(a2, v2);
+		}
+
 		for (Ball b : balls) {
 			// detect collision with the border
-			if (b.x < b.radius || b.x > areaWidth - b.radius) {
+			if (b.x < b.radius && b.vx < 0 || b.x > areaWidth - b.radius && b.vx > 0) {
 				b.vx *= -1; // change direction of ball
 			}
-			if (b.y < b.radius * 0.9 || b.y > areaHeight - b.radius) {
+			else if(b.y < b.radius && b.vy < 0 || b.y > areaHeight - b.radius && b.vy > 0) {
 				b.vy *= -1;
+			}else{
+				b.vy -= GRAVITY * deltaT;
 			}
-			for(Ball b2 : balls){
-				if (b2 != b) {
-					if(isCollision(b, b2)) {
-						System.out.println("Bounce!");
-						double u1 = getVelocity(b.vx, b.vy);
-						double u2 = getVelocity(b2.vx, b2.vy);
-						double r = R(u1, u2);
-						double i = I(b.mass, u1, b2.mass, u2);
-						double v2 = v2(b.mass, b2.mass, r, i);
-						double v1 = v1(v2, r);
-
-
-//						break;
-					}
-				}
-			}
-			b.vy -= g * deltaT;
 			// compute new position according to the speed of the ball
 			b.x += deltaT * b.vx;
 			b.y += deltaT * b.vy;
 		}
 	}
 
-	
+	double getYVelocity(double angle, double velocity){
+		return Math.sin(angle) * velocity;
+	}
+
+	double getXVelocity(double angle, double velocity){
+		return Math.cos(angle) * velocity;
+	}
+
+	double getAngle(double x1, double y1, double x2, double y2){
+		double dx = x1-x2;
+		double dy = y1-y2;
+
+		return  Math.tan(dy/dx);
+	}
 
 	double getVelocity(double vx, double vy){
-		return Math.sqrt(vx * vx + vy * vy);
+		return Math.sqrt((vx * vx) + (vy * vy));
 	}
 
 	double v1(double v2, double r){
@@ -79,11 +103,11 @@ class Model {
 	}
 
 	double I(double m1, double u1, double m2, double u2){
-		return m1 * u1 + m2 * u2;
+		return (m1 * u1) + (m2 * u2);
 	}
 
 	boolean isCollision(Ball b1, Ball b2){
-		return Math.abs(Point.distance(b1.x,b1.y,b2.x,b2.y)) < (b1.radius + b2.radius);
+		return Math.abs(Point.distance(b1.x,b1.y,b2.x,b2.y)) <= (b1.radius + b2.radius);
 	}
 	
 	/**
