@@ -25,32 +25,76 @@ class Model {
 		
 		// Initialize the model with a few balls
 		balls = new Ball[2];
-		balls[0] = new Ball(width / 3, height * 0.9, 1.2, 0, 0.3, 20, Color.red);
-				balls[1] = new Ball(2 * width / 3, height * 0.9, -1, 0, 0.3, 20, Color.green);
+
+//		balls[0] = new Ball(width / 3, height * 0.7, 1.1, -0.5, 0.2, Color.red);
+//		balls[1] = new Ball(2 * width / 3, height * 0.7, -0.7, 0.6, 0.3, Color.green);
+
+
+		//No vy
+		balls[0] = new Ball(width / 3, height * 0.7, 1.1, 0, 0.3, Color.red);
+		balls[1] = new Ball(2 * width / 3, height * 0.7, -0.7, 0, 0.3, Color.green);
 	}
 
 	void step(double deltaT) {
-		// TODO this method implements one step of simulation with a step deltaT
 
 		if (time-- <= 0 && isCollision(balls[0], balls[1])) {
-//			System.out.println("Bounce!");
 
-			Ball ball1 = balls[0];
-			Ball ball2 = balls[1];
+			Ball ball1,ball2;
+
+//			if(balls[1].x < balls[0].x && balls[1].y < balls[0].y){
+			if(false){
+				ball1 = balls[1];
+				ball2 = balls[0];
+			}else {
+				ball1 = balls[0];
+				ball2 = balls[1];
+			}
 
 			Vector v1 = new Vector(ball1.vx, ball1.vy);
 			Vector v2 = new Vector(ball2.vx, ball2.vy);
 
-			double a1 = getAngle(0,0, ball1.vx, ball1.vy);
-			double a2 = getAngle(0,0, ball2.vx, ball2.vy);
+			//System.out.println("Before: ball1: "+getVelocity(v1.x,v1.y)+", ball2: "+getVelocity(v2.x,v2.y)+", Sum: "+(Math.abs(getVelocity(v1.x,v1.y)) + Math.abs(getVelocity(v2.x,v2.y))));
 
 			double b1 = getAngle(ball1.x,ball1.y, ball2.x, ball2.y);
 			double b2 = getAngle(ball2.x,ball2.y, ball1.x, ball1.y);
 
-			v1 = rotate(v1, b1-a1);
-			v2 = rotate(v2, b2-a2);
 
-			
+
+			v1 = rotate(v1, -b1);
+			v2 = rotate(v2, -b1);
+
+			double before1 = v1.x;
+			double before2 = v2.x;
+
+
+			double r = R(v1.x, v2.x);
+			double i = I(ball1.mass, v1.x, ball2.mass, v2.x);
+
+			double vx1 = v1(ball1.mass, ball1.mass, r, i);
+			double vx2 = v2(vx1, ball1.mass, ball2.mass, i);
+//			double vx1 = tempV1(v1.x,ball1.mass, v2.x, ball2.mass);
+//			double vx2 = tempV2(v1.x,ball1.mass, v2.x, ball2.mass);
+
+			System.out.println("Before: ball1: "+before1+", ball2: "+before2+", Momentum: "+(ball1.mass*Math.abs(before1)+ball2.mass*Math.abs(before2)));
+			System.out.println("After: ball1: "+vx1+", ball2: "+vx2+", Momentum: "+(ball1.mass*Math.abs(vx1)+ball2.mass*Math.abs(vx2)));
+			//System.out.println();
+
+			v1.x = vx1;
+			v2.x = vx2;
+
+			v1 = rotate(v1, b1);
+			v2 = rotate(v2, b2);
+
+			//System.out.println("After: ball1: "+getVelocity(v1.x,v1.y)+", ball2: "+getVelocity(v2.x,v2.y)+", Sum: "+(Math.abs(getVelocity(v1.x,v1.y)) + Math.abs(getVelocity(v2.x,v2.y))));
+			System.out.println();
+			ball1.vx = v1.x;
+			ball1.vy = v1.y;
+
+			ball2.vx = v2.x;
+			ball2.vy = v2.y;
+
+			time = 20;
+
 		}
 
 		for (Ball b : balls) {
@@ -61,7 +105,7 @@ class Model {
 			else if(b.y < b.radius && b.vy < 0 || b.y > areaHeight - b.radius && b.vy > 0) {
 				b.vy *= -1;
 			}else{
-				//b.vy -= GRAVITY * deltaT;
+				b.vy -= GRAVITY * deltaT;
 			}
 			// compute new position according to the speed of the ball
 			b.x += deltaT * b.vx;
@@ -96,8 +140,8 @@ class Model {
 		return (i - (m2 * r)) / (m1+m2);
 	}
 
-	double v2(double v1, double r){
-		return r + v1;
+	double v2(double v1, double m1, double m2, double i){
+		return (i - m1*v1)/m2;
 	}
 
 	double R(double u1, double u2){
@@ -109,9 +153,9 @@ class Model {
 	}
 
 	boolean isCollision(Ball b1, Ball b2){
-		return Math.abs(Point.distance(b1.x,b1.y,b2.x,b2.y)) <= (b1.radius + b2.radius) * 1.1;
+		return Math.abs(Point.distance(b1.x,b1.y,b2.x,b2.y)) <= (b1.radius + b2.radius) * 1.001;
 	}
-
+	
 	private class Vector {
 		double x,y;
 
@@ -126,13 +170,13 @@ class Model {
 	 */
 	class Ball {
 		
-		Ball(double x, double y, double vx, double vy, double r, double mass, Color color) {
+		Ball(double x, double y, double vx, double vy, double r, Color color) {
 			this.x = x;
 			this.y = y;
 			this.vx = vx;
 			this.vy = vy;
 			this.radius = r;
-			this.mass = mass;
+			this.mass = r*r * 15;
 			this.color = color;
 		}
 
