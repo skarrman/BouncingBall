@@ -64,12 +64,6 @@ class Model {
 			double before2 = v2.x;
 
 
-//			double r = R(v1.x, v2.x);
-//			double i = I(ball1.mass, v1.x, ball2.mass, v2.x);
-
-//			double vx1 = v1(ball1.mass, ball2.mass, r, i);
-//			double vx2 = v2(vx1, ball1.mass, ball2.mass, i);
-
 			double vx1 = v1(ball1.mass, ball2.mass, v1.x, v2.x);
 			double vx2 = v2(ball1.mass, ball2.mass, v1.x, v2.x);
 
@@ -125,10 +119,6 @@ class Model {
 		return  Math.atan(dy/dx);
 	}
 
-	double getVelocity(double vx, double vy){
-		return Math.sqrt((vx * vx) + (vy * vy));
-	}
-
 	double v1(double m1, double m2, double u1, double u2){
 		double rt = ((m1-m2)/(m1+m2))*u1;
 		double lt = ((2*m2)/(m1+m2))*u2;
@@ -146,31 +136,6 @@ class Model {
 	boolean isCollision(Ball b1, Ball b2){
 		return Math.abs(Point.distance(b1.x,b1.y,b2.x,b2.y)) <= (b1.radius + b2.radius) * 1.001;
 	}
-
-
-//	double getYVelocity(double angle, double velocity){
-//		return Math.sin(angle) * velocity;
-//	}
-//
-//	double getXVelocity(double angle, double velocity){
-//		return Math.cos(angle) * velocity;
-//	}
-
-//	double v1(double m1, double m2, double r, double i){
-//		return (i - (m2 * r)) / (m1+m2);
-//	}
-//
-//	double v2(double v1, double m1, double m2, double i){
-//		return (i - m1*v1)/m2;
-//	}
-//
-//	double R(double u1, double u2){
-//		return -(u2 - u1);
-//	}
-//
-//	double I(double m1, double u1, double m2, double u2){
-//		return (m1 * u1) + (m2 * u2);
-//	}
 
 	private class Vector {
 		double x,y;
