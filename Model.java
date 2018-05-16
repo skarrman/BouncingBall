@@ -41,8 +41,7 @@ class Model {
 
 			Ball ball1,ball2;
 
-//			if(balls[1].x < balls[0].x && balls[1].y < balls[0].y){
-			if(false){
+			if(balls[1].x < balls[0].x && balls[1].y < balls[0].y){
 				ball1 = balls[1];
 				ball2 = balls[0];
 			}else {
@@ -53,31 +52,34 @@ class Model {
 			Vector v1 = new Vector(ball1.vx, ball1.vy);
 			Vector v2 = new Vector(ball2.vx, ball2.vy);
 
-			//System.out.println("Before: ball1: "+getVelocity(v1.x,v1.y)+", ball2: "+getVelocity(v2.x,v2.y)+", Sum: "+(Math.abs(getVelocity(v1.x,v1.y)) + Math.abs(getVelocity(v2.x,v2.y))));
-
 			double b1 = getAngle(ball1.x,ball1.y, ball2.x, ball2.y);
 			double b2 = getAngle(ball2.x,ball2.y, ball1.x, ball1.y);
 
 
 
 			v1 = rotate(v1, -b1);
-			v2 = rotate(v2, -b1);
+			v2 = rotate(v2, -b2);
 
 			double before1 = v1.x;
 			double before2 = v2.x;
 
 
-			double r = R(v1.x, v2.x);
-			double i = I(ball1.mass, v1.x, ball2.mass, v2.x);
+//			double r = R(v1.x, v2.x);
+//			double i = I(ball1.mass, v1.x, ball2.mass, v2.x);
 
-			double vx1 = v1(ball1.mass, ball1.mass, r, i);
-			double vx2 = v2(vx1, ball1.mass, ball2.mass, i);
-//			double vx1 = tempV1(v1.x,ball1.mass, v2.x, ball2.mass);
-//			double vx2 = tempV2(v1.x,ball1.mass, v2.x, ball2.mass);
+//			double vx1 = v1(ball1.mass, ball2.mass, r, i);
+//			double vx2 = v2(vx1, ball1.mass, ball2.mass, i);
 
-			System.out.println("Before: ball1: "+before1+", ball2: "+before2+", Momentum: "+(ball1.mass*Math.abs(before1)+ball2.mass*Math.abs(before2)));
-			System.out.println("After: ball1: "+vx1+", ball2: "+vx2+", Momentum: "+(ball1.mass*Math.abs(vx1)+ball2.mass*Math.abs(vx2)));
-			//System.out.println();
+			double vx1 = v1(ball1.mass, ball2.mass, v1.x, v2.x);
+			double vx2 = v2(ball1.mass, ball2.mass, v1.x, v2.x);
+
+			System.out.println("Before: ball1: "+before1+", " +
+					"ball2: "+before2+", " +
+					"Momentum: "+(ball1.mass*Math.abs(before1)+ball2.mass*Math.abs(before2)));
+			System.out.println("After: ball1: "+vx1+", " +
+					"ball2: "+vx2+", " +
+					"Momentum: "+(ball1.mass*Math.abs(vx1)+ball2.mass*Math.abs(vx2)));
+			System.out.println();
 
 			v1.x = vx1;
 			v2.x = vx2;
@@ -85,15 +87,13 @@ class Model {
 			v1 = rotate(v1, b1);
 			v2 = rotate(v2, b2);
 
-			//System.out.println("After: ball1: "+getVelocity(v1.x,v1.y)+", ball2: "+getVelocity(v2.x,v2.y)+", Sum: "+(Math.abs(getVelocity(v1.x,v1.y)) + Math.abs(getVelocity(v2.x,v2.y))));
-			System.out.println();
 			ball1.vx = v1.x;
 			ball1.vy = v1.y;
 
 			ball2.vx = v2.x;
 			ball2.vy = v2.y;
 
-			time = 20;
+			time = 10;
 
 		}
 
@@ -117,13 +117,6 @@ class Model {
 		return new Vector(vector.x*Math.cos(angle) - vector.y*Math.sin(angle), vector.x*Math.sin(angle) + vector.y*Math.cos(angle));
 	}
 
-	double getYVelocity(double angle, double velocity){
-		return Math.sin(angle) * velocity;
-	}
-
-	double getXVelocity(double angle, double velocity){
-		return Math.cos(angle) * velocity;
-	}
 
 	double getAngle(double x1, double y1, double x2, double y2){
 		double dx = x2-x1;
@@ -136,26 +129,49 @@ class Model {
 		return Math.sqrt((vx * vx) + (vy * vy));
 	}
 
-	double v1(double m1, double m2, double r, double i){
-		return (i - (m2 * r)) / (m1+m2);
+	double v1(double m1, double m2, double u1, double u2){
+		double rt = ((m1-m2)/(m1+m2))*u1;
+		double lt = ((2*m2)/(m1+m2))*u2;
+
+		return rt + lt;
 	}
 
-	double v2(double v1, double m1, double m2, double i){
-		return (i - m1*v1)/m2;
-	}
+	double v2(double m1, double m2, double u1, double u2){
+		double rt = ((2*m1)/(m1+m2))*u1;
+		double lt = ((m2-m1)/(m1+m2))*u2;
 
-	double R(double u1, double u2){
-		return -(u2 - u1);
-	}
-
-	double I(double m1, double u1, double m2, double u2){
-		return (m1 * u1) + (m2 * u2);
+		return rt + lt;
 	}
 
 	boolean isCollision(Ball b1, Ball b2){
 		return Math.abs(Point.distance(b1.x,b1.y,b2.x,b2.y)) <= (b1.radius + b2.radius) * 1.001;
 	}
-	
+
+
+//	double getYVelocity(double angle, double velocity){
+//		return Math.sin(angle) * velocity;
+//	}
+//
+//	double getXVelocity(double angle, double velocity){
+//		return Math.cos(angle) * velocity;
+//	}
+
+//	double v1(double m1, double m2, double r, double i){
+//		return (i - (m2 * r)) / (m1+m2);
+//	}
+//
+//	double v2(double v1, double m1, double m2, double i){
+//		return (i - m1*v1)/m2;
+//	}
+//
+//	double R(double u1, double u2){
+//		return -(u2 - u1);
+//	}
+//
+//	double I(double m1, double u1, double m2, double u2){
+//		return (m1 * u1) + (m2 * u2);
+//	}
+
 	private class Vector {
 		double x,y;
 
