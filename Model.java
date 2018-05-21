@@ -15,8 +15,6 @@ class Model {
 
 	double areaWidth, areaHeight;
 	final static double GRAVITY = 9.82;
-	int time = 5;
-	
 	Ball [] balls;
 
 	Model(double width, double height) {
@@ -26,18 +24,13 @@ class Model {
 		// Initialize the model with a few balls
 		balls = new Ball[2];
 
-//		balls[0] = new Ball(width / 3, height * 0.7, 1.1, -0.5, 0.2, Color.red);
-//		balls[1] = new Ball(2 * width / 3, height * 0.7, -0.7, 0.6, 0.3, Color.green);
-
-
-		//No vy
-		balls[0] = new Ball(width / 3, height * 0.7, 1.1, 0, 0.3, Color.red);
-		balls[1] = new Ball(2 * width / 3, height * 0.7, -0.7, 0, 0.3, Color.green);
+		balls[0] = new Ball(width / 3, height * 0.7, 1.1, 0, 0.3, Color.GREEN);
+		balls[1] = new Ball(2 * width / 3, height * 0.7, -0.7, 0, 0.2, Color.RED);
 	}
 
 	void step(double deltaT) {
 
-		if (time-- <= 0 && isCollision(balls[0], balls[1])) {
+		if (isCollision(balls[0], balls[1])) {
 
 			Ball ball1,ball2;
 
@@ -55,25 +48,11 @@ class Model {
 			double b1 = getAngle(ball1.x,ball1.y, ball2.x, ball2.y);
 			double b2 = getAngle(ball2.x,ball2.y, ball1.x, ball1.y);
 
-
-
 			v1 = rotate(v1, -b1);
 			v2 = rotate(v2, -b2);
 
-			double before1 = v1.x;
-			double before2 = v2.x;
-
-
 			double vx1 = v1(ball1.mass, ball2.mass, v1.x, v2.x);
 			double vx2 = v2(ball1.mass, ball2.mass, v1.x, v2.x);
-
-			System.out.println("Before: ball1: "+before1+", " +
-					"ball2: "+before2+", " +
-					"Momentum: "+(ball1.mass*Math.abs(before1)+ball2.mass*Math.abs(before2)));
-			System.out.println("After: ball1: "+vx1+", " +
-					"ball2: "+vx2+", " +
-					"Momentum: "+(ball1.mass*Math.abs(vx1)+ball2.mass*Math.abs(vx2)));
-			System.out.println();
 
 			v1.x = vx1;
 			v2.x = vx2;
@@ -86,9 +65,6 @@ class Model {
 
 			ball2.vx = v2.x;
 			ball2.vy = v2.y;
-
-			time = 10;
-
 		}
 
 		for (Ball b : balls) {
@@ -120,17 +96,11 @@ class Model {
 	}
 
 	double v1(double m1, double m2, double u1, double u2){
-		double rt = ((m1-m2)/(m1+m2))*u1;
-		double lt = ((2*m2)/(m1+m2))*u2;
-
-		return rt + lt;
+		return ((m1-m2)/(m1+m2))*u1 + ((2*m2)/(m1+m2))*u2;
 	}
 
 	double v2(double m1, double m2, double u1, double u2){
-		double rt = ((2*m1)/(m1+m2))*u1;
-		double lt = ((m2-m1)/(m1+m2))*u2;
-
-		return rt + lt;
+		return ((2*m1)/(m1+m2))*u1 + ((m2-m1)/(m1+m2))*u2;
 	}
 
 	boolean isCollision(Ball b1, Ball b2){
